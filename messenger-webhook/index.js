@@ -98,11 +98,11 @@ function handleMessage(sender_psid, received_message) {
     } else if (!interval) {
       const questionResponse = {
         "text": `What are you doing?`,
-        "quick_replies": ACTIVITY_CATEGORIES.map(category => {
+        "quick_replies": ACTIVITY_CATEGORIES.map(category => ({
           "content_type": "text",
           "title": category,
           "payload": category
-        })
+        }))
       }
       callSendAPI(sender_psid, questionResponse)
       interval = setInterval(() => callSendAPI(sender_psid, questionResponse), BLOCK_LENGTH)
