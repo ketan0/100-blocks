@@ -94,7 +94,7 @@ function handleMessage(sender_psid, received_message) {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
     if (received_message.text === "clear" && interval) {
-      clearInterval(interval);
+      interval = clearInterval(interval);
     } else if (!interval) {
       const questionResponse = {
         "text": `What are you doing?`,
