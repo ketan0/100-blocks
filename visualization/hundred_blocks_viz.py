@@ -6,39 +6,30 @@ Usage: python hundred_blocks_viz.py [GOOGLE_SPREADSHEET URL]
 """
 
 import sys
-import pandas as pd
-import datetime
 import matplotlib.pyplot as plt
+from matplotlib.patches import Circle
+from matplotlib.colors import BoundaryNorm
 from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
-import numpy as np
 
-from utils import load_google_sheet
+from utils import load_google_sheet, load_dynamo_table, extract_blocks
 
-def next_nearest_activity(timestamp, df):
-    return df[df['Timestamp'] > timestamp]['Category'].values[0]
-
-def hundred_blocks_viz(df, ncols=10):
-    start = df['Timestamp'].iloc[0]
-    end = df['Timestamp'].iloc[-1]
-    print('start: ', start)
-    print('end: ', end)
-    category_ids = {category: i for i, category in enumerate(df['Category'].unique())}
-    block_start_times = pd.date_range(start=start, end=end, freq='10min')
-    block_activities = [category_ids[next_nearest_activity(ts, df)]
-                        for ts in block_start_times]
-    block_activities = np.pad(
-        block_activities, (0, ncols - (len(block_activities) % ncols)), 'constant', constant_values=-1
-    )
-    block_activities_mat = block_activities.reshape(-1, ncols)
-    cmap = ListedColormap([f'C{i}' for i in category_ids.values()])
-    plt.matshow(block_activities_mat, cmap=cmap)
-    legend_elements = [Line2D([0], [0], marker='o', color=f'C{i}', label=category, markersize=15)
-                       for category, i in category_ids.items()]
-    plt.legend(handles=legend_elements)
-    plt.axis('off')
+def hundred_blocks_viz(blocks, activity_ids, ncols=10):
+    fig, ax = plt.subplots()
+    ax.axis("equal")
+    for i, activity_id in enumerate(blocks):
+        circle = Circle((2 * (i % ncols), 2 * (i // ncols)), 0.4, color=f'C{activity_id}')
+        ax.add_patch(circle)
+    ax.autoscale_view()
+    ax.set_ylim(ax.get_ylim()[::-1])
+    legend_elements = [Line2D([0], [0], marker='o', color=f'C{i}', label=activity, markersize=15)
+                       for activity, i in activity_ids.items()]
+    plt.title(f'The Story of Today, in {len(blocks)} blocks')
+    ax.legend(handles=legend_elements,bbox_to_anchor=(1.25, 1.25))
+    ax.axis('off')
 
 if __name__ == "__main__":
-    df = load_google_sheet(sys.argv[1])
-    hundred_blocks_viz(df)
+    df = load_dynamo_table(sys.argv[1])
+    blocks, activity_ids = extract_blocks(df)
+    hundred_blocks_viz(blocks, activity_ids)
