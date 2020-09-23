@@ -97,7 +97,7 @@ function handleMessage(sender_psid, received_message) {
       clearInterval(interval);
     } else if (!interval) {
       const questionResponse = {
-        "text": `What are you doing?`
+        "text": `What are you doing?`,
         "quick_replies": ACTIVITY_CATEGORIES.map(category => {
           "content_type": "text",
           "title": category,
