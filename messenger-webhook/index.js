@@ -1,5 +1,9 @@
 'use strict';
 require('dotenv').config();
+// the length of the productivity "block", in milliseconds
+// const BLOCK_LENGTH = 600000;
+const BLOCK_LENGTH = 1000; // just for fun (and testing,) poll me every second 😅
+const ACTIVITY_CATEGORIES = ['Projects', 'Social Time', 'Eating', 'Exercise', 'Misc.']
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 // Imports dependencies and set up http server
 const
@@ -96,7 +100,7 @@ function handleMessage(sender_psid, received_message) {
     if (received_message.text === "clear" && interval) {
       clearInterval(interval);
     } else if (!interval) {
-      interval = setInterval(() => callSendAPI(sender_psid, questionResponse), 10000)
+      interval = setInterval(() => callSendAPI(sender_psid, questionResponse), BLOCK_LENGTH)
     }
   } else if (received_message.attachments) {
     // Get the URL of the message attachment
