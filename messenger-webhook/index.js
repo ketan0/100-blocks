@@ -8,6 +8,7 @@ const
   body_parser = require('body-parser'),
   app = express().use(body_parser.json()); // creates express http server
 
+let interval;
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
@@ -87,7 +88,15 @@ function handleMessage(sender_psid, received_message) {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
     response = {
-      "text": `You sent the message: "${received_message.text}". Now send me an attachment!`
+      "text": `You sent the message: "${received_message.text}". x is ${x}. Now send me an attachment!`
+    }
+    const questionResponse = {
+      "text": `What are you doing?`
+    }
+    if (received_message.text === "clear" && interval) {
+      clearInterval(interval);
+    } else if (!interval) {
+      interval = setInterval(() => callSendAPI(sender_psid, questionResponse), 10000)
     }
   } else if (received_message.attachments) {
     // Get the URL of the message attachment
@@ -119,8 +128,8 @@ function handleMessage(sender_psid, received_message) {
     }
   }
 
-  // Send the response message
-  callSendAPI(sender_psid, response);
+  // // Send the response message
+  // callSendAPI(sender_psid, response);
 }
 
 function handlePostback(sender_psid, received_postback) {
