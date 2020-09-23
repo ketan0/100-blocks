@@ -2,7 +2,8 @@
 require('dotenv').config();
 // the length of the productivity "block", in milliseconds
 // const BLOCK_LENGTH = 600000;
-const BLOCK_LENGTH = 1000; // just for fun (and testing,) poll me every second 😅
+const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
+//TODO: allow user to input categories
 const ACTIVITY_CATEGORIES = ['Projects', 'Social Time', 'Eating', 'Exercise', 'Misc.']
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 // Imports dependencies and set up http server
@@ -12,6 +13,7 @@ const
   body_parser = require('body-parser'),
   app = express().use(body_parser.json()); // creates express http server
 
+//TODO: support multiple users of this app 😅
 let interval;
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
@@ -91,15 +93,18 @@ function handleMessage(sender_psid, received_message) {
   if (received_message.text) {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
-    response = {
-      "text": `You sent the message: "${received_message.text}". Now send me an attachment!`
-    }
-    const questionResponse = {
-      "text": `What are you doing?`
-    }
     if (received_message.text === "clear" && interval) {
       clearInterval(interval);
     } else if (!interval) {
+      const questionResponse = {
+        "text": `What are you doing?`
+        "quick_replies": ACTIVITY_CATEGORIES.map(category => {
+          "content_type": "text",
+          "title": category,
+          "payload": category
+        })
+      }
+      callSendAPI(sender_psid, questionResponse)
       interval = setInterval(() => callSendAPI(sender_psid, questionResponse), BLOCK_LENGTH)
     }
   } else if (received_message.attachments) {
@@ -143,11 +148,12 @@ function handlePostback(sender_psid, received_postback) {
   let payload = received_postback.payload;
 
   // Set the response based on the postback payload
-  if (payload === 'yes') {
-    response = { "text": "Thanks!" }
-  } else if (payload === 'no') {
-    response = { "text": "Oops, try sending another image." }
-  }
+  response = { "text": `Got the payload ${payload} from you!` }
+  // if (payload === 'yes') {
+  //   response = { "text": "Thanks!" }
+  // } else if (payload === 'no') {
+  //   response = { "text": "Oops, try sending another image." }
+  // }
   // Send the message to acknowledge the postback
   callSendAPI(sender_psid, response);
 }
