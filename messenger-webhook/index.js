@@ -3,15 +3,17 @@ require('dotenv').config();
 // the length of the productivity "block", in milliseconds
 // const BLOCK_LENGTH = 600000;
 const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
-//TODO: allow user to input categories
-const ACTIVITY_CATEGORIES = ['Projects', 'Social Time', 'Eating', 'Exercise', 'Misc.']
+//TODO: allow user to input their own activities throught the Messenger UI (not hardcoded)
+const ACTIVTIES = ['Projects', 'Social Time', 'Eating', 'Exercise', 'Misc.']
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 // Imports dependencies and set up http server
 const
-  request = require('request'),
-  express = require('express'),
-  body_parser = require('body-parser'),
-  app = express().use(body_parser.json()); // creates express http server
+request = require('request'),
+express = require('express'),
+body_parser = require('body-parser'),
+app = express().use(body_parser.json()); // creates express http server
+const AWS = require('aws-sdk');
+const ddb = new AWS.DynamoDB.DocumentClient(({apiVersion: '2012-08-10', region: 'us-east-1'}))
 
 //TODO: support multiple users of this app 😅
 let interval;
@@ -87,63 +89,51 @@ app.get('/webhook', (req, res) => {
 });
 
 function handleMessage(sender_psid, received_message) {
-  let response;
-
+  const questionResponse = {
+    "text": "What are you doing?",
+    "quick_replies": ACTIVTIES.map(activity => ({
+      "content_type": "text",
+      "title": activity,
+      "payload": activity
+    }))
+  };
   // Checks if the message contains text
-  if (received_message.text) {
+  if (received_message.quick_reply) {
+    const activity = received_message.quick_reply.payload;
+    addActivityToDatabase(activity);
+    interval = setTimeout(() => callSendAPI(sender_psid, questionResponse), BLOCK_LENGTH)
+  } else if (received_message.text) {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
-    if (received_message.text === "clear" && interval) {
-      interval = clearInterval(interval);
-    } else if (!interval) {
-      const questionResponse = {
-        "text": `What are you doing?`,
-        "quick_replies": ACTIVITY_CATEGORIES.map(category => ({
-          "content_type": "text",
-          "title": category,
-          "payload": category
-        }))
-      }
+    if (!interval) {
       callSendAPI(sender_psid, questionResponse)
-      interval = setInterval(() => callSendAPI(sender_psid, questionResponse), BLOCK_LENGTH)
-    }
-  } else if (received_message.attachments) {
-    // Get the URL of the message attachment
-    let attachment_url = received_message.attachments[0].payload.url;
-    response = {
-      "attachment": {
-        "type": "template",
-        "payload": {
-          "template_type": "generic",
-          "elements": [{
-            "title": "Is this the right picture?",
-            "subtitle": "Tap a button to answer.",
-            "image_url": attachment_url,
-            "buttons": [
-              {
-                "type": "postback",
-                "title": "Yes!",
-                "payload": "yes",
-              },
-              {
-                "type": "postback",
-                "title": "No!",
-                "payload": "no",
-              }
-            ],
-          }]
-        }
-      }
+    } else if (received_message.text === "clear") {
+      interval = clearTimeout(interval);
     }
   }
+}
 
-  // // Send the response message
-  // callSendAPI(sender_psid, response);
+function addActivityToDatabase(activity) {
+  const timestamp = new Date().toISOString();
+  var params = {
+    TableName : "100-blocks-table",
+    Item: {
+      activity,
+      timestamp
+    }
+  };
+  ddb.put(params, function(err, data) {
+    if (err) console.log(err);
+    else {
+      console.log('Successfully put data in DynamoDB!')
+      console.log(data);
+    }
+  });
 }
 
 function handlePostback(sender_psid, received_postback) {
   console.log('ok')
-   let response;
+  let response;
   // Get the payload for the postback
   let payload = received_postback.payload;
 
