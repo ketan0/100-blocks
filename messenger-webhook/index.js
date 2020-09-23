@@ -1,11 +1,12 @@
 'use strict';
 require('dotenv').config();
 // the length of the productivity "block", in milliseconds
-// const BLOCK_LENGTH = 600000;
-const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
+const BLOCK_LENGTH = 600000;
+// const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
 //TODO: allow user to input their own activities throught the Messenger UI (not hardcoded)
 const ACTIVTIES = ['Projects', 'Social Time', 'Eating', 'Exercise', 'Misc.']
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const DYNAMODB_TABLE_NAME =  "100-blocks-table";
 // Imports dependencies and set up http server
 const
 request = require('request'),
@@ -15,7 +16,8 @@ app = express().use(body_parser.json()); // creates express http server
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient(({apiVersion: '2012-08-10', region: 'us-east-1'}))
 
-//TODO: support multiple users of this app 😅
+//TODO: support multiple users of this app
+// (each on their own intervals; storeAnd didn’t fall asleep for awh a dict of intervals) 😅
 let interval;
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
@@ -97,7 +99,8 @@ function handleMessage(sender_psid, received_message) {
       "payload": activity
     }))
   };
-  // Checks if the message contains text
+
+  // Quick reply = user input after prompted "What are you doing?"
   if (received_message.quick_reply) {
     const activity = received_message.quick_reply.payload;
     addActivityToDatabase(activity);
@@ -105,9 +108,10 @@ function handleMessage(sender_psid, received_message) {
   } else if (received_message.text) {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
-    if (!interval) {
+    if (!interval) { //user starts up the tracking cycle by typing anything in
       callSendAPI(sender_psid, questionResponse)
-    } else if (received_message.text === "clear") {
+    } else if (received_message.text === "clear") { // user starts up the tracking cycle by typing 'clear'
+      console.log("Received 'clear' from user. Ending tracking cycle...")
       interval = clearTimeout(interval);
     }
   }
@@ -116,16 +120,13 @@ function handleMessage(sender_psid, received_message) {
 function addActivityToDatabase(activity) {
   const timestamp = new Date().toISOString();
   var params = {
-    TableName : "100-blocks-table",
-    Item: {
-      activity,
-      timestamp
-    }
+    TableName : DYNAMODB_TABLE_NAME,
+    Item: { activity, timestamp }
   };
   ddb.put(params, function(err, data) {
     if (err) console.log(err);
     else {
-      console.log('Successfully put data in DynamoDB!')
+      console.log(`Successfully put data ${JSON.stringify(params.Item)} in DynamoDB!`)
       console.log(data);
     }
   });
