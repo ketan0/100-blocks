@@ -4,8 +4,9 @@ require('dotenv').config();
 const BLOCK_LENGTH = 600000;
 // const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
 //TODO: allow user to input their own activities throught the Messenger UI (not hardcoded)
-const ACTIVTIES = ['Projects', 'Social Time', 'Eating', 'Exercise', 'Misc.']
+const ACTIVTIES = ['Projects', 'Social Time', 'Research', 'Eating', 'Reading', 'Writing', 'Exercise', 'Misc.']
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const DYNAMODB_TABLE_NAME =  "100-blocks-table";
 // Imports dependencies and set up http server
 const
@@ -65,8 +66,6 @@ app.post('/webhook', (req, res) => {
 // Accepts GET requests at the /webhook endpoint
 app.get('/webhook', (req, res) => {
 
-  /** UPDATE YOUR VERIFY TOKEN **/
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
   // Parse params from the webhook verification request
   let mode = req.query['hub.mode'];
