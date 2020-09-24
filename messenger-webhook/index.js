@@ -8,6 +8,7 @@ const ACTIVTIES = ['Projects', 'Social Time', 'Research', 'Eating', 'Reading', '
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const DYNAMODB_TABLE_NAME =  "100-blocks-table";
+const DYNAMODB_TABLE_REGION =  "us-east-1";
 // Imports dependencies and set up http server
 const
 request = require('request'),
@@ -15,7 +16,7 @@ express = require('express'),
 body_parser = require('body-parser'),
 app = express().use(body_parser.json()); // creates express http server
 const AWS = require('aws-sdk');
-const ddb = new AWS.DynamoDB.DocumentClient(({apiVersion: '2012-08-10', region: 'us-east-1'}))
+const ddb = new AWS.DynamoDB.DocumentClient(({apiVersion: '2012-08-10', region: DYNAMODB_TABLE_REGION}))
 
 //TODO: support multiple users of this app
 // (each on their own intervals; storeAnd didn’t fall asleep for awh a dict of intervals) 😅

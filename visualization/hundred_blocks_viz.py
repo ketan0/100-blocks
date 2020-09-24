@@ -2,7 +2,7 @@
 """
 Script to visualize Tim Urban's "100 Blocks" (https://waitbutwhy.com/2016/10/100-blocks-day.html)
 
-Usage: python hundred_blocks_viz.py [GOOGLE_SPREADSHEET URL]
+Usage: python hundred_blocks_viz.py [DYNAMODB_TABLE_NAME]
 """
 
 import sys

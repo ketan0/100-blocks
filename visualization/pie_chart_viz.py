@@ -2,7 +2,7 @@
 """
 Script to visualize my activities as a pie chart
 
-Usage: python pie_chart_viz.py [GOOGLE_SPREADSHEET URL]
+Usage: python pie_chart_viz.py [DYNAMODB_TABLE_NAME]
 """
 
 import sys
