@@ -4,7 +4,18 @@ require('dotenv').config();
 const BLOCK_LENGTH = 600000;
 // const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
 //TODO: allow user to input their own activities throught the Messenger UI (not hardcoded)
-const ACTIVTIES = ['Projects', 'Social Time', 'Research', 'Eating', 'Reading', 'Writing', 'Exercise', 'Misc.']
+const ACTIVITIES = [
+  {title: '🎯', payload: 'Projects'},
+  {title: '👨🏾‍🔬', payload: 'Research'},
+  {title: '🗣', payload: 'Social Time'},
+  {title: '🍊', payload: 'Eating'},
+  {title: '💪🏾', payload: 'Exercise'},
+  {title: '📖', payload: 'Reading'},
+  {title: '📝', payload: 'Writing'},
+  {title: '📱', payload: 'Scrolling'},
+  {title: '😴', payload: 'Sleep'},
+  {title: '❓', payload: 'Misc.'}
+]
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const DYNAMODB_TABLE_NAME =  "100-blocks-table";
@@ -93,10 +104,10 @@ app.get('/webhook', (req, res) => {
 function handleMessage(sender_psid, received_message) {
   const questionResponse = {
     "text": "What are you doing?",
-    "quick_replies": ACTIVTIES.map(activity => ({
-      "content_type": "text",
-      "title": activity,
-      "payload": activity
+    "quick_replies": ACTIVITIES.map(({ title, payload }) => ({
+      content_type: "text",
+      title,
+      payload
     }))
   };
 
@@ -110,7 +121,7 @@ function handleMessage(sender_psid, received_message) {
     // will be added to the body of our request to the Send API
     if (!interval) { //user starts up the tracking cycle by typing anything in
       callSendAPI(sender_psid, questionResponse)
-    } else if (received_message.text === "clear") { // user starts up the tracking cycle by typing 'clear'
+    } else if (received_message.text === "clear") { // user ends the tracking cycle by typing 'clear'
       console.log("Received 'clear' from user. Ending tracking cycle...")
       interval = clearTimeout(interval);
     }
