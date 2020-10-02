@@ -11,7 +11,7 @@ const ACTIVITIES = {
   '🚶🏾‍♂️': 'Body',
   '🛠': 'Utility',
   '❓': 'Misc.',
-  {title: '😴', payload: 'Sleep'},
+  '😴': 'Sleep',
 }
 const VALID_EMOJIS = new Set(
   ACTIVITIES.map(({title}) => title),
