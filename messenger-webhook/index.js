@@ -120,13 +120,14 @@ function handleMessage(sender_psid, received_message) {
 
   // User sent one of the valid activity emojis
   // TODO: refactor, repeated code here.
-  if (received_message.text in ACTIVITIES) {
-    mostRecentActivity = ACTIVITIES[received_message];
+  const user_msg = received_message.text
+  if (user_msg in ACTIVITIES) {
+    mostRecentActivity = ACTIVITIES[user_msg];
     addActivityToDatabase(mostRecentActivity);
     interval = setTimeout(() =>
       callSendAPI(sender_psid, whatchaDoing), BLOCK_LENGTH
     )
-  } else if (received_message === '👍') {
+  } else if (user_msg === '👍') {
     console.log("Repeating previous activity...")
     if (!mostRecentActivity) {
       callSendAPI(sender_psid, {
@@ -149,19 +150,17 @@ function handleMessage(sender_psid, received_message) {
 every 10 minutes to ask you what you're doing :) \
 Type 'clear' at any time to end the cycle."
       })
-      setTimeout(() =>
-        callSendAPI(sender_psid, whatchaDoing), 3000
-      )
-    } else if (received_message.text === "clear") { // user ends the tracking cycle by typing 'clear'
+      callSendAPI(sender_psid, whatchaDoing), 3000
+    } else if (user_msg === "clear") { // user ends the tracking cycle by typing 'clear'
       console.log("Received 'clear' from user. Ending tracking cycle...")
       callSendAPI(sender_psid, {
         text: "Ending tracking for now... Type anything to restart!"
       })
       interval = clearTimeout(interval);
     } else {
-      console.log(`Received invalid input from the user: ${received_message.text}.`)
+      console.log(`Received invalid input from the user: ${user_msg}.`)
       callSendAPI(sender_psid, {
-        text: `Sorry, '${received_message.text}' is not a valid activity.`
+        text: `Sorry, '${user_msg}' is not a valid activity.`
       })
     }
   }
