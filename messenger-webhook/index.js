@@ -1,8 +1,8 @@
 'use strict';
 require('dotenv').config();
 // the length of the productivity "block", in milliseconds
-const BLOCK_LENGTH = 600000;
-// const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
+// const BLOCK_LENGTH = 600000;
+const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
 //TODO: allow user to input their own activities throught the Messenger UI (not hardcoded)
 const ACTIVITIES = {
   '🔴': 'Deep Work',
@@ -149,8 +149,10 @@ function handleMessage(sender_psid, received_message) {
         text: "Welcome to the 100 Blocks bot! I'll poll you \
 every 10 minutes to ask you what you're doing :) \
 Type 'clear' at any time to end the cycle."
-      })
-      callSendAPI(sender_psid, whatchaDoing), 3000
+      });
+      setTimeout(() =>
+        callSendAPI(sender_psid, whatchaDoing), 3000
+      );
     } else if (user_msg === "clear") { // user ends the tracking cycle by typing 'clear'
       console.log("Received 'clear' from user. Ending tracking cycle...")
       callSendAPI(sender_psid, {
