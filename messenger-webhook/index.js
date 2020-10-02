@@ -149,7 +149,9 @@ function handleMessage(sender_psid, received_message) {
 every 10 minutes to ask you what you're doing :) \
 Type 'clear' at any time to end the cycle."
       })
-      callSendAPI(sender_psid, whatchaDoing)
+      setTimeout(() =>
+        callSendAPI(sender_psid, whatchaDoing), 3000
+      )
     } else if (received_message.text === "clear") { // user ends the tracking cycle by typing 'clear'
       console.log("Received 'clear' from user. Ending tracking cycle...")
       callSendAPI(sender_psid, {
