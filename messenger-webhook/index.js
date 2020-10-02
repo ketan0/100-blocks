@@ -127,7 +127,8 @@ function handleMessage(sender_psid, received_message) {
     interval = setTimeout(() =>
       callSendAPI(sender_psid, whatchaDoing), BLOCK_LENGTH
     )
-  } else if (user_msg === '👍') {
+  } else if (received_message.attachments) {
+    // using this as a proxy for the messenger like button
     console.log("Repeating previous activity...")
     if (!mostRecentActivity) {
       callSendAPI(sender_psid, {
