@@ -110,7 +110,7 @@ function handleMessage(sender_psid, received_message) {
     }))
   };
 
-  if (!received_message.text) {
+  if (!received_message.text && !received_message.attachments) {
     callSendAPI(sender_psid, {
       text: "Message must have text in it."
     })
@@ -132,7 +132,7 @@ function handleMessage(sender_psid, received_message) {
     console.log("Repeating previous activity...")
     if (!mostRecentActivity) {
       callSendAPI(sender_psid, {
-        text: "can't use the like to repeat previous activity, since there is none."
+        text: "can't use the like to repeat previous activity, since there is no previous activity."
       })
       callSendAPI(sender_psid, whatchaDoing)
     } else {
