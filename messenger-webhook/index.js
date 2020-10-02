@@ -4,18 +4,20 @@ require('dotenv').config();
 const BLOCK_LENGTH = 600000;
 // const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
 //TODO: allow user to input their own activities throught the Messenger UI (not hardcoded)
-const ACTIVITIES = [
-  {title: '🎯', payload: 'Projects'},
-  {title: '👨🏾‍🔬', payload: 'Research'},
-  {title: '🗣', payload: 'Social Time'},
-  {title: '🍊', payload: 'Eating'},
-  {title: '💪🏾', payload: 'Exercise'},
-  {title: '📖', payload: 'Reading'},
-  {title: '📝', payload: 'Writing'},
-  {title: '📱', payload: 'Scrolling'},
+const ACTIVITIES = {
+  '🔴': 'Deep Work',
+  '⭕': 'Shallow Work',
+  '🗣': 'Social Time',
+  '🚶🏾‍♂️': 'Body',
+  '🛠': 'Utility',
+  '❓': 'Misc.',
   {title: '😴', payload: 'Sleep'},
-  {title: '❓', payload: 'Misc.'}
-]
+}
+const VALID_EMOJIS = new Set(
+  ACTIVITIES.map(({title}) => title),
+  ['👍']
+)
+
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const DYNAMODB_TABLE_NAME =  "100-blocks-table";
@@ -32,6 +34,7 @@ const ddb = new AWS.DynamoDB.DocumentClient(({apiVersion: '2012-08-10', region: 
 //TODO: support multiple users of this app
 // (each on their own intervals; storeAnd didn’t fall asleep for awh a dict of intervals) 😅
 let interval;
+let mostRecentActivity = undefined;
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
@@ -102,28 +105,66 @@ app.get('/webhook', (req, res) => {
 });
 
 function handleMessage(sender_psid, received_message) {
-  const questionResponse = {
-    "text": "What are you doing?",
-    "quick_replies": ACTIVITIES.map(({ title, payload }) => ({
+  const whatchaDoing = {
+    text: "What are you doing?",
+    quick_replies: Object.entries(ACTIVITIES).map(({ title, payload }) => ({
       content_type: "text",
       title,
       payload
     }))
   };
 
-  // Quick reply = user input after prompted "What are you doing?"
-  if (received_message.quick_reply) {
-    const activity = received_message.quick_reply.payload;
-    addActivityToDatabase(activity);
-    interval = setTimeout(() => callSendAPI(sender_psid, questionResponse), BLOCK_LENGTH)
-  } else if (received_message.text) {
+  if (!received_message.text) {
+    callSendAPI(sender_psid, {
+      text: "Message must have text in it."
+    })
+    callSendAPI(sender_psid, whatchaDoing)
+    return;
+  }
+
+  // User sent one of the valid activity emojis
+  // TODO: refactor, repeated code here.
+  if (received_message.text in ACTIVITIES) {
+    mostRecentActivity = ACTIVITIES[received_message];
+    addActivityToDatabase(mostRecentActivity);
+    interval = setTimeout(() =>
+      callSendAPI(sender_psid, whatchaDoing), BLOCK_LENGTH
+    )
+  } else if (received_message === '👍') {
+    console.log("Repeating previous activity...")
+    if (!mostRecentActivity) {
+      callSendAPI(sender_psid, {
+        text: "can't use the like to repeat previous activity, since there is none."
+      })
+      callSendAPI(sender_psid, whatchaDoing)
+    } else {
+      addActivityToDatabase(mostRecentActivity);
+      interval = setTimeout(() =>
+        callSendAPI(sender_psid, whatchaDoing), BLOCK_LENGTH
+      )
+    }
+  } else {
     // Create the payload for a basic text message, which
     // will be added to the body of our request to the Send API
     if (!interval) { //user starts up the tracking cycle by typing anything in
-      callSendAPI(sender_psid, questionResponse)
+      console.log("Starting up the tracking cycle...")
+      callSendAPI(sender_psid, {
+        text: "Welcome to the 100 Blocks bot! I'll poll you \
+every 10 minutes to ask you what you're doing :) \
+Type 'clear' at any time to end the cycle."
+      })
+      callSendAPI(sender_psid, whatchaDoing)
     } else if (received_message.text === "clear") { // user ends the tracking cycle by typing 'clear'
       console.log("Received 'clear' from user. Ending tracking cycle...")
+      callSendAPI(sender_psid, {
+        text: "Ending tracking for now... Type anything to restart!"
+      })
       interval = clearTimeout(interval);
+    } else {
+      console.log(`Received invalid input from the user: ${received_message.text}.`)
+      callSendAPI(sender_psid, {
+        text: `Sorry, '${received_message.text}' is not a valid activity.`
+      })
     }
   }
 }
