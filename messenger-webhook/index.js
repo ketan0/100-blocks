@@ -13,10 +13,6 @@ const ACTIVITIES = {
   '❓': 'Misc.',
   '😴': 'Sleep',
 }
-const VALID_EMOJIS = new Set(
-  ACTIVITIES.map(({title}) => title),
-  ['👍']
-)
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
