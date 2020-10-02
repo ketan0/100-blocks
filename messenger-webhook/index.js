@@ -103,7 +103,7 @@ app.get('/webhook', (req, res) => {
 function handleMessage(sender_psid, received_message) {
   const whatchaDoing = {
     text: "What are you doing?",
-    quick_replies: Object.entries(ACTIVITIES).map(({ title, payload }) => ({
+    quick_replies: Object.entries(ACTIVITIES).map(([title, payload]) => ({
       content_type: "text",
       title,
       payload
