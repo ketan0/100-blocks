@@ -149,7 +149,7 @@ function handleMessage(sender_psid, received_message) {
       callSendAPI(sender_psid, {
         text: "Welcome to the 100 Blocks bot! I'll poll you \
 every 10 minutes to ask you what you're doing :) \
-Hit the like button to repeat the previous activity.\
+Hit the like button to repeat the previous activity. \
 Type 'clear' at any time to end the cycle."
       });
       setTimeout(() =>
@@ -166,6 +166,9 @@ Type 'clear' at any time to end the cycle."
       callSendAPI(sender_psid, {
         text: `Sorry, '${user_msg}' is not a valid activity.`
       })
+      setTimeout(() =>
+        callSendAPI(sender_psid, whatchaDoing), 3000
+      );
     }
   }
 }
