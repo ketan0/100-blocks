@@ -7,9 +7,11 @@ Follow the tutorial at [Quick Start - Messenger Platform](https://developers.fac
 Visualization in Python (perhaps in Jupyter) can be run as follows (assuming you're in the [visualization](./visualization) directory.) You'll first need to [configure your AWS credentials locally.](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) Then load the data from DynamoDB into a Pandas table, and extract 10-minute blocks from the data:
 
 ```python
+from datetime import datetime, timedelta
+from pytz import timezone
+
 from utils import load_dynamo_table, extract_blocks
 from config import DYNAMODB_TABLE_NAME, ACTIVITY_COLORS
-from pytz import timezone
 # lower bound on wakeup time (that way only get activities after sleep)
 this_morning_naive = datetime.now().replace(
     hour=9, minute=0, second=0, microsecond=0
@@ -17,9 +19,6 @@ this_morning_naive = datetime.now().replace(
 # convert to an "aware" datetime object (has a sense of timezone)
 eastern = timezone('US/Eastern')
 this_morning_aware = eastern.localize(this_morning_naive)
-print(this_morning_aware)
-last_morning_aware = this_morning_aware - timedelta(days=1)
-print(last_morning_aware)
 start_dt = this_morning_aware
 end_dt = this_morning_aware + timedelta(days=1)
 df = load_dynamo_table(DYNAMODB_TABLE_NAME,
