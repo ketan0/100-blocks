@@ -18,6 +18,7 @@ def pie_chart_viz(blocks, activity_colors):
     frequencies = Counter(blocks)
     plt.pie(frequencies.values(),
             labels=frequencies.keys(),
+            autopct='%1.1f%%',
             colors=[activity_colors[ac] for ac in frequencies.keys()])
 
 if __name__ == "__main__":
