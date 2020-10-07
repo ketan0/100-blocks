@@ -7,10 +7,11 @@ const BLOCK_LENGTH = 600000;
 const ACTIVITIES = {
   '🔴': 'Deep Work',
   '⭕': 'Shallow Work',
+  '💭': 'Reflection',
   '🗣': 'Social Time',
   '🚶🏾‍♂️': 'Body',
-  '🛠': 'Utility',
   '❓': 'Misc.',
+  '🛠': 'Utility',
   '😴': 'Sleep',
 }
 
