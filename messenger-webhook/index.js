@@ -13,6 +13,7 @@ const ACTIVITIES = {
   '❓': 'Misc.',
   '🛠': 'Utility',
   '😴': 'Sleep',
+  '⬛': 'Untracked',
 }
 
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
