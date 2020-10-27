@@ -5,8 +5,10 @@ const BLOCK_LENGTH = 600000;
 // const BLOCK_LENGTH = 10000; // just for fun (and testing,) poll me every 10 seconds
 //TODO: allow user to input their own activities throught the Messenger UI (not hardcoded)
 const ACTIVITIES = {
-  '🔴': 'Deep Work',
-  '⭕': 'Shallow Work',
+  '🔴⬆️': 'Deep Work - Output',
+  '⭕⬆️': 'Shallow Work - Output',
+  '🟣⬇️': 'Deep Work - Input',
+  '🔘⬇️': 'Shallow Work - Input',
   '💭': 'Reflection',
   '🗣': 'Social Time',
   '🚶🏾‍♂️': 'Body',
